@@ -152,3 +152,4 @@ Gồm unit test cho 7 phép tính (không cần Kafka) và test cho `PendingRequ
 - **`Connection to node -1 (localhost/127.0.0.1:9092) could not be established`** → Kafka chưa chạy.
 - **Trùng cổng** → đổi biến môi trường `SERVER_PORT` trong Run Configuration của ứng dụng đó.
 - **`release version 17 not supported`** → IntelliJ đang dùng JDK cũ hơn 17: *File → Project Structure → Project SDK*.
+# hoc-git-bai-3
