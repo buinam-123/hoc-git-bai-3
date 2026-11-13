@@ -1,0 +1,36 @@
+server:
+  port: ${SERVER_PORT:3000}
+
+spring:
+  application:
+    name: gateway
+  main:
+    banner-mode: "off"
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    consumer:
+      auto-offset-reset: latest   # mỗi lần chạy dùng group mới, chỉ cần các kết quả từ bây giờ
+
+calc:
+  request-timeout-ms: ${REQUEST_TIMEOUT_MS:8000}
+  topic:
+    partitions: ${TOPIC_PARTITIONS:3}
+    replicas: ${TOPIC_REPLICATION:1}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,kafkaListeners
+
+logging:
+  level:
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO

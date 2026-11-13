@@ -1,0 +1,105 @@
+# Tự co giãn số bản sao theo CPU. Cần metrics-server (minikube addons enable metrics-server).
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: add-service
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: add-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: subtract-service
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: subtract-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: multiply-service
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: multiply-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: divide-service
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: divide-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sqrt-service
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: sqrt-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: power-service
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: power-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: factorial-service
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: factorial-service }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gateway
+  namespace: calculator
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: gateway }
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }

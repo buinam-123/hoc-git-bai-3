@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Máy tính vi dịch vụ</title>
+  <meta name="description" content="Máy tính mà mỗi phép tính chạy trong một microservice riêng, giao tiếp qua Kafka.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232447F5'/%3E%3Cpath d='M28 50h44M50 28v44' stroke='white' stroke-width='11' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Máy tính vi dịch vụ</h1>
+      <p class="tagline">Mỗi phép tính chạy trong một service riêng. Các service nói chuyện với nhau qua Kafka.</p>
+    </div>
+    <div id="gw" class="gw" role="status" aria-live="polite">
+      <span class="dot"></span><span id="gw-text">Đang kết nối gateway…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="sheet" aria-labelledby="calc-title">
+      <h2 id="calc-title" class="visually-hidden">Máy tính</h2>
+
+      <fieldset class="keys" id="keys">
+        <legend>Chọn phép tính</legend>
+        <!-- được dựng bằng app.js -->
+      </fieldset>
+
+      <form id="calc-form" class="inputs" autocomplete="off" novalidate>
+        <label class="field" id="field-a">
+          <span id="label-a">Số thứ nhất</span>
+          <input id="a" name="a" type="text" inputmode="decimal" placeholder="0" required>
+        </label>
+        <span class="op-sign" id="op-sign" aria-hidden="true">+</span>
+        <label class="field" id="field-b">
+          <span id="label-b">Số thứ hai</span>
+          <input id="b" name="b" type="text" inputmode="decimal" placeholder="0" required>
+        </label>
+        <button type="submit" id="go" class="go">Tính</button>
+      </form>
+
+      <div class="result" id="result" aria-live="polite">
+        <p class="expr" id="expr">Nhập số rồi bấm Tính.</p>
+        <p class="value" id="value"></p>
+        <p class="meta" id="meta"></p>
+        <button type="button" id="copy" class="ghost" hidden>Sao chép kết quả đầy đủ</button>
+      </div>
+    </section>
+
+    <aside class="journey" aria-labelledby="journey-title">
+      <h2 id="journey-title">Đường đi của một phép tính</h2>
+      <ol class="trace" id="trace">
+        <li class="node" data-n="browser"><span class="pin"></span><div><strong>Trình duyệt</strong><small id="t-browser">Gửi POST /api/calculate</small></div></li>
+        <li class="node" data-n="gateway"><span class="pin"></span><div><strong>Gateway</strong><small id="t-gateway">Ghi yêu cầu vào Kafka</small></div></li>
+        <li class="node topic" data-n="req"><span class="pin"></span><div><strong>Topic yêu cầu</strong><small id="t-req">calc.&lt;phép tính&gt;.requests</small></div></li>
+        <li class="node" data-n="service"><span class="pin"></span><div><strong id="t-service-name">Service tính toán</strong><small id="t-service">Đọc yêu cầu, tính, ghi kết quả</small></div></li>
+        <li class="node topic" data-n="res"><span class="pin"></span><div><strong>Topic kết quả</strong><small id="t-res">calc.results</small></div></li>
+        <li class="node" data-n="back"><span class="pin"></span><div><strong>Trả về trình duyệt</strong><small id="t-back">Gateway ghép kết quả theo mã yêu cầu</small></div></li>
+      </ol>
+    </aside>
+
+    <section class="history" aria-labelledby="hist-title">
+      <div class="row">
+        <h2 id="hist-title">Lịch sử</h2>
+        <button type="button" id="clear" class="ghost">Xóa lịch sử</button>
+      </div>
+      <ul id="history-list" class="hist-list"></ul>
+      <p id="history-empty" class="empty">Chưa có phép tính nào. Kết quả sẽ hiện ở đây và được giữ lại khi tải lại trang.</p>
+    </section>
+
+    <section class="services" aria-labelledby="svc-title">
+      <h2 id="svc-title">Các service</h2>
+      <ul id="svc-list" class="svc-list"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

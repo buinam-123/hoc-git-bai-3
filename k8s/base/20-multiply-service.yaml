@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multiply-service
+  namespace: calculator
+  labels: { app: multiply-service, part-of: calculator }
+spec:
+  replicas: 1   # tăng tối đa 3 (bằng số partition) để chia tải: kubectl -n calculator scale deploy/multiply-service --replicas=3
+  selector:
+    matchLabels: { app: multiply-service }
+  template:
+    metadata:
+      labels: { app: multiply-service, part-of: calculator }
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: multiply-service
+          image: calc/multiply-service:1.0.0
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef: { name: calc-config }
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            failureThreshold: 24
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 6
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities: { drop: ["ALL"] }

@@ -1,0 +1,36 @@
+server:
+  port: ${SERVER_PORT:8107}      # chạy local: mỗi service một cổng; trong Docker/K8s image đặt SERVER_PORT=8080
+
+spring:
+  application:
+    name: factorial-service
+  main:
+    banner-mode: "off"
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    consumer:
+      auto-offset-reset: earliest   # không làm rơi yêu cầu gửi trước khi consumer được gán partition
+
+calc:
+  operation: factorial
+  topic:
+    partitions: ${TOPIC_PARTITIONS:3}
+    replicas: ${TOPIC_REPLICATION:1}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,kafkaListeners
+
+logging:
+  level:
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO

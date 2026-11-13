@@ -1,0 +1,128 @@
+# Chạy toàn bộ hệ thống:  docker compose up --build -d
+# Mở trình duyệt:         http://localhost:8080
+# Lần build đầu tiên khá lâu (Maven tải thư viện); các lần sau dùng cache nên nhanh.
+# Xem Kafka bằng UI:      docker compose --profile tools up -d   → http://localhost:8090
+
+x-service-defaults: &service-defaults
+  restart: unless-stopped
+  depends_on:
+    kafka:
+      condition: service_healthy
+  environment:
+    KAFKA_BROKERS: kafka:9092
+    TOPIC_PARTITIONS: "3"
+    TOPIC_REPLICATION: "1"
+  healthcheck:
+    test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health/readiness || exit 1"]
+    interval: 10s
+    timeout: 3s
+    retries: 18
+    start_period: 30s
+
+services:
+  # ------------------------------------------------------------------ Kafka (KRaft, không cần Zookeeper)
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: calc-kafka
+    restart: unless-stopped
+    ports:
+      - "9094:9094"   # cho công cụ chạy trên máy host
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    profiles: ["tools"]
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+
+  # ------------------------------------------------------------------ 7 service tính toán (Java / Spring Boot)
+  add-service:
+    <<: *service-defaults
+    build: { context: ., args: { MODULE: add-service } }
+    image: calc/add-service:1.0.0
+  subtract-service:
+    <<: *service-defaults
+    build: { context: ., args: { MODULE: subtract-service } }
+    image: calc/subtract-service:1.0.0
+  multiply-service:
+    <<: *service-defaults
+    build: { context: ., args: { MODULE: multiply-service } }
+    image: calc/multiply-service:1.0.0
+  divide-service:
+    <<: *service-defaults
+    build: { context: ., args: { MODULE: divide-service } }
+    image: calc/divide-service:1.0.0
+  sqrt-service:
+    <<: *service-defaults
+    build: { context: ., args: { MODULE: sqrt-service } }
+    image: calc/sqrt-service:1.0.0
+  power-service:
+    <<: *service-defaults
+    build: { context: ., args: { MODULE: power-service } }
+    image: calc/power-service:1.0.0
+  factorial-service:
+    <<: *service-defaults
+    build: { context: ., args: { MODULE: factorial-service } }
+    image: calc/factorial-service:1.0.0
+
+  # ------------------------------------------------------------------ Gateway + Frontend
+  gateway:
+    build: { context: ., args: { MODULE: gateway, SERVER_PORT: "3000" } }
+    image: calc/gateway:1.0.0
+    restart: unless-stopped
+    ports:
+      - "3000:3000"   # gateway cũng phục vụ giao diện web tại http://localhost:3000
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      TOPIC_PARTITIONS: "3"
+      TOPIC_REPLICATION: "1"
+      REQUEST_TIMEOUT_MS: "8000"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/actuator/health/readiness || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 18
+      start_period: 30s
+
+  frontend:
+    build: ./frontend
+    image: calc/frontend:1.0.0
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+
+volumes:
+  kafka-data:

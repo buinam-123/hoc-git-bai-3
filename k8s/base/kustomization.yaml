@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: calculator
+resources:
+  - 00-namespace.yaml
+  - 01-configmap.yaml
+  - 10-kafka.yaml
+  - 20-add-service.yaml
+  - 20-subtract-service.yaml
+  - 20-multiply-service.yaml
+  - 20-divide-service.yaml
+  - 20-sqrt-service.yaml
+  - 20-power-service.yaml
+  - 20-factorial-service.yaml
+  - 30-gateway.yaml
+  - 40-frontend.yaml
