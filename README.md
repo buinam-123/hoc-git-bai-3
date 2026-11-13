@@ -1,3 +1,5 @@
+# Đây là nhánh feature-up-sth
+
 # Máy tính vi dịch vụ — phiên bản Java (Spring Boot + Kafka)
 
 **Mỗi phép tính là một microservice riêng**, giao tiếp qua **Kafka**, đóng gói bằng **Docker**, triển khai bằng **Kubernetes**, có **frontend** web.
